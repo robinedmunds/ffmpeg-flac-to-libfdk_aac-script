@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+declare -i threads=4
+declare -a flac_array
+declare -a buckets
+
 input_dir=/home/robin/netshare/aac/eac
 output_dir=/home/robin/netshare/aac/delete-me
-declare -i threads=4
-declare -a thread_buckets
 
 # echo "Batch ffmpeg flac to FDK aac converter"
 # echo -e "Enter input directory full path: \c"
@@ -13,6 +15,13 @@ declare -a thread_buckets
 # echo -e "Enter thread count: \c"
 # echo -e "Enter thread count: \c
 # read threads
+
+function flac_processor () {
+  array=$1
+
+  # takes thread array
+  # loops over files and processes them
+}
 
 function replicate_dirs () {
   cd $input_dir
@@ -25,32 +34,38 @@ function copy_other_files () {
 }
 
 function flac_files_to_array () {
-  local -a array
-  local -i bucket_idx=0
-
   cd $input_dir
-  readarray -d "" array < <( find . -type f -iname "*.flac" -print0 )
+  readarray -d "" flac_array < <( find . -type f -iname "*.flac" -print0 )
+}
 
-  for elem in "${array[@]}"; do
-    echo "($bucket_idx) $elem"
+function slice_flac_array () {
+  local -i flac_count=${#flac_array[@]}
+  local -i division=$(( $flac_count / $threads ))
+  local -i idx=0
+  local -i start=0
+  local -i length=$division
 
-    bucket=${thread_buckets[$bucket_idx]}
-    bucket+=("$elem")
-    thread_buckets[$bucket_idx]=$bucket
+  echo "flac_count: $flac_count"
 
-    if (( $bucket_idx < $threads-1 )); then
-      (( bucket_idx++ ))
-    else bucket_idx=0
-    fi
+  for (( idx=0; $idx < $threads-1; idx++ )); do
+    echo "------------------------------"
+    echo "start: $start / length: $length"
+    echo "------------------------------"
+
+    for elem in "${flac_array[@]:$start:$length}"; do
+      echo "($idx) $elem"
+    done
+
+    start+=$length
   done
 
-  # select_idx=0
-  # bucket=${thread_buckets[$select_idx]}
-  # for elem in "${bucket[@]}"; do
-  #   echo "($select_idx) $elem"
-  # done
+  for elem in "${flac_array[@]:$start}"; do
+    echo "($idx) $elem"
+  done
+
 }
 
 # replicate_dirs
 # copy_other_files
 flac_files_to_array
+slice_flac_array
