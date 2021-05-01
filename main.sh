@@ -25,17 +25,18 @@ function copy_other_files () {
 }
 
 function flac_files_to_array () {
-  declare -a array
-  declare -i bucket_idx=0
+  local -a array
+  local -i bucket_idx=0
 
   cd $input_dir
   readarray -d "" array < <( find . -type f -iname "*.flac" -print0 )
 
-  for idx in ${!array[@]}; do
-    # echo ${array[idx]}
-    # echo $bucket_idx
+  for elem in "${array[@]}"; do
+    echo "($bucket_idx) $elem"
 
-    thread_buckets[$bucket_idx]+="${array[$idx]}"
+    bucket=${thread_buckets[$bucket_idx]}
+    bucket+=("$elem")
+    thread_buckets[$bucket_idx]=$bucket
 
     if (( $bucket_idx < $threads-1 )); then
       (( bucket_idx++ ))
@@ -43,10 +44,10 @@ function flac_files_to_array () {
     fi
   done
 
-  # zeroeth_bucket=${thread_buckets[0]}
-  # # echo ${!zeroeth_bucket[@]}
-  # for elem in "${zeroeth_bucket[@]}"; do
-  #   echo $elem
+  # select_idx=0
+  # bucket=${thread_buckets[$select_idx]}
+  # for elem in "${bucket[@]}"; do
+  #   echo "($select_idx) $elem"
   # done
 }
 
