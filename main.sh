@@ -16,52 +16,67 @@ output_dir=/home/robin/netshare/aac/delete-me
 # echo -e "Enter thread count: \c
 # read threads
 
-function flac_processor () {
-  array=$1
+function flac_processor {
+  local -a files
+  readarray -d "" files $1
 
   # takes thread array
   # loops over files and processes them
+
+  for file in "${files[@]}"; do
+    echo "$file"
+  done
 }
 
-function replicate_dirs () {
+function replicate_dirs {
   cd $input_dir
   find . -type d -exec mkdir -p $output_dir/{} \;
 }
 
-function copy_other_files () {
+function copy_other_files {
   cd $input_dir
   find . -type f ! -iname "*.flac" -exec cp --parents {} $output_dir \;
 }
 
-function flac_files_to_array () {
+function flac_files_to_array {
   cd $input_dir
   readarray -d "" flac_array < <( find . -type f -iname "*.flac" -print0 )
 }
 
-function slice_flac_array () {
+function slice_flac_array {
   local -i flac_count=${#flac_array[@]}
   local -i division=$(( $flac_count / $threads ))
-  local -i idx=0
   local -i start=0
   local -i length=$division
 
   echo "flac_count: $flac_count"
 
   for (( idx=0; $idx < $threads-1; idx++ )); do
-    echo "------------------------------"
-    echo "start: $start / length: $length"
-    echo "------------------------------"
-
-    for elem in "${flac_array[@]:$start:$length}"; do
-      echo "($idx) $elem"
-    done
-
+    sliced=("${flac_array[@]:$start:$length}")
+    flac_processor "${sliced}"
     start+=$length
   done
 
-  for elem in "${flac_array[@]:$start}"; do
-    echo "($idx) $elem"
-  done
+  sliced=("${flac_array[@]:$start}")
+  flac_processor "${sliced}"
+
+  # echo "flac_count: $flac_count"
+
+  # for (( idx=0; $idx < $threads-1; idx++ )); do
+  #   echo "------------------------------"
+  #   echo "start: $start / length: $length"
+  #   echo "------------------------------"
+
+  #   for elem in "${flac_array[@]:$start:$length}"; do
+  #     echo "($idx) $elem"
+  #   done
+
+  #   start+=$length
+  # done
+
+  # for elem in "${flac_array[@]:$start}"; do
+  #   echo "($idx) $elem"
+  # done
 
 }
 
