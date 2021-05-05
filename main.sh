@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare -i threads=4
+declare -i threads=16
 declare -a flac_array
 declare -a buckets
 
@@ -20,13 +20,25 @@ function flac_processor {
   # takes thread array
   # loops over files and processes them
 
-  for file in "${sliced[@]}"; do
-    echo "$file"
-  done
+  infile="${sliced[0]:2}"
+  outfile="${sliced[0]:2:-5}"
 
-  echo ""
-  echo "- files for thread ${#sliced[@]}"
-  echo ""
+  docker run --rm --volume $input_dir:$(pwd)/input \
+    --volume $output_dir:$(pwd)/output --workdir $(pwd) \
+    jrottenberg/ffmpeg:alpine \
+    -i "./input/$infile" \
+    -c:a libfdk_aac -vbr 4 \
+    -metadata comment="FFmpeg libfdk_aac VBR4" \
+    "./output/$outfile.m4a"
+
+
+  # for file in "${sliced[@]}"; do
+  #   echo "$file"
+  # done
+
+  # echo ""
+  # echo "- files for thread ${#sliced[@]}"
+  # echo ""
 }
 
 function replicate_dirs {
@@ -63,7 +75,7 @@ function slice_flac_array {
   flac_processor sliced
 }
 
-# replicate_dirs
-# copy_other_files
+replicate_dirs
+copy_other_files
 flac_files_to_array
 slice_flac_array
