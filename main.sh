@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-declare -i threads=16
+declare -i threads=4
 declare -a flac_array
-declare -a buckets
 
-input_dir=/home/robin/netshare/aac/eac
-output_dir=/home/robin/netshare/aac/delete-me
+input_dir=/home/robin/netshare/aac/test-in
+output_dir=/home/robin/netshare/aac/test-out
 
 # echo "Batch ffmpeg flac to FDK aac converter"
 # echo -e "Enter input directory full path: \c"
@@ -16,23 +15,6 @@ output_dir=/home/robin/netshare/aac/delete-me
 # echo -e "Enter thread count: \c
 # read threads
 
-function flac_processor {
-  # takes thread array
-  # loops over files and processes them
-
-  for file in "${sliced[@]}"; do
-    infile="${file[0]:2}"
-    outfile="${file[0]:2:-5}"
-
-    docker run --rm --volume $input_dir:$(pwd)/input \
-      --volume $output_dir:$(pwd)/output --workdir $(pwd) \
-      jrottenberg/ffmpeg:alpine \
-      -i "./input/$infile" \
-      -c:a libfdk_aac -vbr 4 \
-      -metadata comment="FFmpeg libfdk_aac VBR4" \
-      "./output/$outfile.m4a"
-  done
-}
 
 function replicate_dirs {
   cd $input_dir
@@ -56,16 +38,32 @@ function slice_flac_array {
   local -i length=$division
   local -a sliced
 
-  echo "flac_count: $flac_count"
-
-  for (( idx=0; $idx < $threads-2; idx++ )); do
+  for (( idx=0; $idx < $threads; idx++ )); do
     sliced=("${flac_array[@]:$start:$length}")
-    coproc flac_processor sliced
+    if (( $idx == $threads-1 )); then
+      sliced=("${flac_array[@]:$start}")
+    fi
     start+=$length
+    coproc flac_processor sliced
   done
+}
 
-  sliced=("${flac_array[@]:$start}")
-  coproc flac_processor sliced
+function flac_processor {
+  # takes thread array
+  # loops over files and processes them
+
+  for file in "${sliced[@]}"; do
+    infile="${file[0]:2}"
+    outfile="${file[0]:2:-5}"
+
+    docker run --rm --volume $input_dir:$(pwd)/input \
+      --volume $output_dir:$(pwd)/output --workdir $(pwd) \
+      jrottenberg/ffmpeg:alpine \
+      -i "./input/$infile" \
+      -c:a libfdk_aac -vbr 4 \
+      -metadata comment="FFmpeg libfdk_aac VBR4" \
+      "./output/$outfile.m4a"
+  done
 }
 
 replicate_dirs
