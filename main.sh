@@ -17,15 +17,14 @@ output_dir=/home/robin/netshare/aac/delete-me
 # read threads
 
 function flac_processor {
-  local -a files
-  readarray -d "" files $1
+  for file in "${sliced[@]}"; do
+    echo "$file"
+  done
+
+  echo "len ${#sliced[@]}"
 
   # takes thread array
   # loops over files and processes them
-
-  for file in "${files[@]}"; do
-    echo "$file"
-  done
 }
 
 function replicate_dirs {
@@ -48,36 +47,18 @@ function slice_flac_array {
   local -i division=$(( $flac_count / $threads ))
   local -i start=0
   local -i length=$division
+  local -n sliced
 
   echo "flac_count: $flac_count"
 
   for (( idx=0; $idx < $threads-1; idx++ )); do
     sliced=("${flac_array[@]:$start:$length}")
-    flac_processor "${sliced}"
+    flac_processor sliced
     start+=$length
   done
 
   sliced=("${flac_array[@]:$start}")
-  flac_processor "${sliced}"
-
-  # echo "flac_count: $flac_count"
-
-  # for (( idx=0; $idx < $threads-1; idx++ )); do
-  #   echo "------------------------------"
-  #   echo "start: $start / length: $length"
-  #   echo "------------------------------"
-
-  #   for elem in "${flac_array[@]:$start:$length}"; do
-  #     echo "($idx) $elem"
-  #   done
-
-  #   start+=$length
-  # done
-
-  # for elem in "${flac_array[@]:$start}"; do
-  #   echo "($idx) $elem"
-  # done
-
+  flac_processor sliced
 }
 
 # replicate_dirs
