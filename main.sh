@@ -3,19 +3,6 @@
 declare -i threads=4
 declare -a flac_array
 
-input_dir=/home/robin/netshare/aac/test-in
-output_dir=/home/robin/netshare/aac/test-out
-
-# echo "Batch ffmpeg flac to FDK aac converter"
-# echo -e "Enter input directory full path: \c"
-# read input_dir
-# echo -e "Enter output directory full path: \c"
-# read output_dir
-# echo -e "Enter thread count: \c"
-# echo -e "Enter thread count: \c
-# read threads
-
-
 function replicate_dirs {
   cd $input_dir
   find . -type d -exec mkdir -p $output_dir/{} \;
@@ -65,6 +52,16 @@ function flac_processor {
       "./output/$outfile.m4a"
   done
 }
+
+echo "Batch ffmpeg flac to FDK aac converter"
+echo ""
+echo -e "Enter input directory full path: \c"
+read input_dir
+echo -e "Enter output directory full path: \c"
+read output_dir
+echo -e "Enter thread count: \c"
+echo -e "Enter thread count: \c"
+read threads
 
 replicate_dirs
 copy_other_files
