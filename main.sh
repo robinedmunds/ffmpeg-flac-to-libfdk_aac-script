@@ -2,6 +2,7 @@
 
 declare -i threads=4
 declare -a flac_array
+declare -i quality=4
 
 function replicate_dirs {
   cd $input_dir
@@ -58,8 +59,8 @@ function flac_processor {
       --volume $output_dir:$(pwd)/output --workdir $(pwd) \
       jrottenberg/ffmpeg:4.1-alpine \
       -i "./input/$infile" \
-      -c:a libfdk_aac -vbr 4 \
-      -metadata comment="jrottenberg/ffmpeg:4.1-alpine libfdk_aac vbr4" \
+      -c:a libfdk_aac -vbr $quality \
+      -metadata comment="jrottenberg/ffmpeg:4.1-alpine libfdk_aac vbr$quality" \
       "./output/$outfile.m4a"
   done
 }
@@ -71,8 +72,9 @@ read input_dir
 echo -e -n "Enter output directory full path: "
 read output_dir
 echo -e -n "Enter thread count: "
-echo -e -n "Enter thread count: "
 read threads
+echo -e -n "Enter audio quality (1-5): "
+read quality
 
 replicate_dirs
 # copy_other_files
