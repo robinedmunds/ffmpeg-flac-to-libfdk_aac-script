@@ -13,6 +13,17 @@ function copy_other_files {
   find . -type f ! -iname "*.flac" -exec cp --parents {} $output_dir \;
 }
 
+function process_album_art {
+  cd $input_dir
+  readarray -d "" art_array < <( \
+    find . -type f -regextype egrep -iregex ".*folder\.(jpg|jpeg|png)$" -print0 )
+
+  for full_path in "${art_array[@]}"; do
+    dest="$output_dir/${full_path:2:-4}"
+    convert -geometry 1000 "$full_path" "$dest.jpg"
+  done
+}
+
 function flac_files_to_array {
   cd $input_dir
   readarray -d "" flac_array < <( find . -type f -iname "*.flac" -print0 )
@@ -45,7 +56,7 @@ function flac_processor {
 
     docker run --rm --volume $input_dir:$(pwd)/input \
       --volume $output_dir:$(pwd)/output --workdir $(pwd) \
-      jrottenberg/ffmpeg:alpine \
+      jrottenberg/ffmpeg:4.1-alpine \
       -i "./input/$infile" \
       -c:a libfdk_aac -vbr 4 \
       -metadata comment="FFmpeg libfdk_aac VBR4" \
@@ -64,6 +75,7 @@ echo -e "Enter thread count: \c"
 read threads
 
 replicate_dirs
-copy_other_files
+# copy_other_files
+process_album_art
 flac_files_to_array
 slice_flac_array
