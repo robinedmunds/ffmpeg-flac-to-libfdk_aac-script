@@ -59,19 +59,19 @@ function flac_processor {
       jrottenberg/ffmpeg:4.1-alpine \
       -i "./input/$infile" \
       -c:a libfdk_aac -vbr 4 \
-      -metadata comment="FFmpeg libfdk_aac VBR4" \
+      -metadata comment="jrottenberg/ffmpeg:4.1-alpine libfdk_aac vbr4" \
       "./output/$outfile.m4a"
   done
 }
 
 echo "Batch ffmpeg flac to FDK aac converter"
 echo ""
-echo -e "Enter input directory full path: \c"
+echo -e -n "Enter input directory full path: "
 read input_dir
-echo -e "Enter output directory full path: \c"
+echo -e -n "Enter output directory full path: "
 read output_dir
-echo -e "Enter thread count: \c"
-echo -e "Enter thread count: \c"
+echo -e -n "Enter thread count: "
+echo -e -n "Enter thread count: "
 read threads
 
 replicate_dirs
