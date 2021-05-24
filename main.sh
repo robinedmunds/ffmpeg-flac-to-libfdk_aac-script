@@ -58,7 +58,7 @@ function flac_processor {
     docker run --rm --volume $input_dir:$(pwd)/input \
       --volume $output_dir:$(pwd)/output --workdir $(pwd) \
       jrottenberg/ffmpeg:4.1-alpine \
-      -i "./input/$infile" \
+      -i "./input/$infile" -av -sample_fmt s16 -ar 44100 \
       -c:a libfdk_aac -vbr $quality \
       -metadata comment="jrottenberg/ffmpeg:4.1-alpine libfdk_aac vbr$quality" \
       "./output/$outfile.m4a"
