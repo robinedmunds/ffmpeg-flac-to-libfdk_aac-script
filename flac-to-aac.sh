@@ -2,10 +2,6 @@
 
 set -e
 
-declare -i threads=4
-declare -a flac_array
-declare -i quality=4
-
 function replicate_dirs {
   cd $input_dir
   find . -type d -exec mkdir -p $output_dir/{} \;
@@ -60,7 +56,7 @@ function flac_processor {
     docker run --rm --volume $input_dir:$(pwd)/input \
       --volume $output_dir:$(pwd)/output --workdir $(pwd) \
       jrottenberg/ffmpeg:4.1-alpine \
-      -i "./input/$infile" -av -sample_fmt s16 -ar 44100 \
+      -i "./input/$infile" -sample_fmt s16 -ar 44100 \
       -c:a libfdk_aac -vbr $quality \
       -metadata comment="jrottenberg/ffmpeg:4.1-alpine libfdk_aac vbr$quality" \
       "./output/$outfile.m4a"
@@ -70,13 +66,26 @@ function flac_processor {
 echo "Batch ffmpeg flac to FDK aac converter"
 echo ""
 echo -e -n "Enter input directory full path: "
-read -e input_dir
+read -e input
+if [[ ! -d "$input" ]]; then
+  echo "error: Invalid directory"
+  exit 2
+fi
+input_dir=$input
 echo -e -n "Enter output directory full path: "
-read -e output_dir
-echo -e -n "Enter thread count (default=$threads): "
-read threads
-echo -e -n "Enter audio quality (1-5, default=$quality): "
-read quality
+read -e input
+echo -e -n "Enter thread count (default=4): "
+read input
+if [[ $input -lt 1 ]]; then
+  threads=4
+fi
+threads=$input
+echo -e -n "Enter audio quality (1-5, default=4): "
+read input
+if [[ $input -lt 1 ]] || [[ $input -gt 5 ]]; then
+  quality=4
+fi
+quality=$input
 
 replicate_dirs
 # copy_other_files
