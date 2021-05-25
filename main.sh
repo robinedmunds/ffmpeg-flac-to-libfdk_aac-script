@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 declare -i threads=4
 declare -a flac_array
 declare -i quality=4
