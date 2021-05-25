@@ -73,7 +73,7 @@ if [[ ! -d "$input" ]]; then
 fi
 input_dir=$input
 echo -e -n "Enter output directory full path: "
-read -e input
+read -e output_dir
 echo -e -n "Enter thread count (default=4): "
 read input
 if [[ $input -lt 1 ]]; then
