@@ -70,12 +70,12 @@ function flac_processor {
 echo "Batch ffmpeg flac to FDK aac converter"
 echo ""
 echo -e -n "Enter input directory full path: "
-read input_dir
+read -e input_dir
 echo -e -n "Enter output directory full path: "
-read output_dir
-echo -e -n "Enter thread count: "
+read -e output_dir
+echo -e -n "Enter thread count (default=$threads): "
 read threads
-echo -e -n "Enter audio quality (1-5): "
+echo -e -n "Enter audio quality (1-5, default=$quality): "
 read quality
 
 replicate_dirs
